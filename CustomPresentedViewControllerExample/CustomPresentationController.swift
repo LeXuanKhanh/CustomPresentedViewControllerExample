@@ -34,16 +34,27 @@ class CustomPresentationController: UIPresentationController {
     var dismissHeight = (UIScreen.main.bounds.height / 2.0) / 2.0
     var presentHeight = UIScreen.main.bounds.height / 2.0
     
+    var dismissY: CGFloat {
+        return UIScreen.main.bounds.height - dismissHeight
+    }
+    
+    var presentY: CGFloat {
+        return UIScreen.main.bounds.height - presentHeight
+    }
+    
+    var isDismissWhenReachDismissHeight = true
+    
     override init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?) {
         super.init(presentedViewController: presentedViewController, presenting: presentingViewController)
         
         self.panRecognizer.addTarget(self, action: #selector(onPan(_:)))
         presentedViewController.view.addGestureRecognizer(panRecognizer)
+        presentedViewController.view.roundCorners(corners: [.topLeft, .topRight], radius: 8)
     }
     
     override var frameOfPresentedViewInContainerView: CGRect {
         guard let bounds = containerView?.bounds else { return .zero }
-        return CGRect(x: 0, y: presentHeight, width: bounds.width, height: presentHeight)
+        return CGRect(x: 0, y: presentY, width: bounds.width, height: presentHeight)
     }
     
     func setupDimmingView() -> UIView {
@@ -86,40 +97,39 @@ class CustomPresentationController: UIPresentationController {
             guard var frame = self.presentedView?.frame else {
                 return
             }
-
+            
+            // position start change
             if endPointY == -1 {
                 endPointY = endPoint.y
                 return
             }
             
+            // position not change
             if endPointY == endPoint.y {
                 return
             }
             
             let deltaY = endPoint.y - endPointY
             //print("deltaY \(deltaY)")
-            
             endPointY = endPoint.y
-
             frame.origin.y = frame.origin.y + deltaY
             
-            if frame.origin.y <= presentHeight {
+            if frame.origin.y <= presentY {
                 return
             }
             
             //print("frame.origin.y \(frame.origin.y)")
-            
             self.presentedView?.frame = frame
             
         case .ended:
+            // reset position
             endPointY = -1
             guard let frame = self.presentedView?.frame else {
                 return
             }
             
             let vcHeight = UIScreen.main.bounds.height - frame.origin.y
-            
-            if vcHeight <= dismissHeight {
+            if vcHeight <= dismissHeight && isDismissWhenReachDismissHeight {
                 self.presentedViewController.dismiss(animated: true, completion: nil)
             } else {
                 UIView.animate(withDuration: 0.3) { [weak self] in
@@ -127,7 +137,7 @@ class CustomPresentationController: UIPresentationController {
                         return
                     }
                     
-                    strongSelf.presentedView?.frame.origin.y = strongSelf.presentHeight
+                    strongSelf.presentedView?.frame.origin.y = strongSelf.presentY
                 }
             }
             

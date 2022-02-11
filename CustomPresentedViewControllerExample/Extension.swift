@@ -41,3 +41,32 @@ public extension UIColor {
         )
     }
 }
+
+extension UIView {
+    func roundCorners(corners: UIRectCorner, radius: CGFloat) {
+        let path = UIBezierPath(roundedRect: self.bounds, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        let mask = CAShapeLayer()
+        mask.path = path.cgPath
+        self.layer.mask = mask
+        self.layer.masksToBounds = true
+    }
+    
+    func setBorder(borderWidth: CGFloat?=nil,
+                   borderColor: UIColor?=nil,
+                   cornerRadius: CGFloat?=nil){
+        
+        if let borderWidth = borderWidth{
+            self.layer.borderWidth = borderWidth
+        }
+        
+        if let borderColor = borderColor{
+            self.layer.borderColor = borderColor.cgColor
+        }
+        
+        if let cornerRadius = cornerRadius{
+            //Fix ios 10
+            self.layoutIfNeeded()
+            self.layer.cornerRadius = cornerRadius
+        }
+    }
+}

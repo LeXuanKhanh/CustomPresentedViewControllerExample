@@ -26,6 +26,11 @@ class ViewController: UIViewController {
 
 extension ViewController: UIViewControllerTransitioningDelegate {
     func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
-        return CustomPresentationController(presentedViewController: presented, presenting: presenting)
+        let cpc = CustomPresentationController(presentedViewController: presented, presenting: presenting)
+        cpc.presentHeight = 2 * UIScreen.main.bounds.height / 3
+        cpc.dismissHeight = UIScreen.main.bounds.height / 3
+        cpc.isDismissWhenReachDismissHeight = true
+        // cpc.panRecognizer.isEnabled = false
+        return cpc
     }
 }
