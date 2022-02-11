@@ -17,8 +17,12 @@ class ViewController: UIViewController {
     @IBAction func onButtonPresentTapped(_ sender: Any) {
         let vc = PresentedViewController()
         let navVC = UINavigationController(rootViewController: vc)
+        
         navVC.transitioningDelegate = self
         navVC.modalPresentationStyle = .custom
+        
+        // navVC.modalPresentationStyle = .formSheet
+        
         self.present(navVC, animated: true)
     }
     
@@ -30,7 +34,6 @@ extension ViewController: UIViewControllerTransitioningDelegate {
         cpc.presentHeight = 2 * UIScreen.main.bounds.height / 3
         cpc.dismissHeight = UIScreen.main.bounds.height / 3
         cpc.isDismissWhenReachDismissHeight = true
-        // cpc.panRecognizer.isEnabled = false
         return cpc
     }
 }

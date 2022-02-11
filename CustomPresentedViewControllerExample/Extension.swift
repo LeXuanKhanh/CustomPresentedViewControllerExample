@@ -68,5 +68,17 @@ extension UIView {
             self.layoutIfNeeded()
             self.layer.cornerRadius = cornerRadius
         }
+        
+        var safeArea: UIEdgeInsets {
+            if #available(iOS 11.0, *) {
+                return UIApplication
+                .shared
+                .connectedScenes
+                .flatMap { ($0 as? UIWindowScene)?.windows ?? [] }
+                .first { $0.isKeyWindow }?.safeAreaInsets ?? .zero
+            } else {
+                return .zero
+            }
+        }
     }
 }

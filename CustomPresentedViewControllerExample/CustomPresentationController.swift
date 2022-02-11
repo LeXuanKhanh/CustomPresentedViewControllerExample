@@ -33,6 +33,8 @@ class CustomPresentationController: UIPresentationController {
     
     var dismissHeight = (UIScreen.main.bounds.height / 2.0) / 2.0
     var presentHeight = UIScreen.main.bounds.height / 2.0
+    var maxScaleParentVC = 0.9
+    var isDimmingEnabled = false
     
     var dismissY: CGFloat {
         return UIScreen.main.bounds.height - dismissHeight
@@ -49,7 +51,7 @@ class CustomPresentationController: UIPresentationController {
         
         self.panRecognizer.addTarget(self, action: #selector(onPan(_:)))
         presentedViewController.view.addGestureRecognizer(panRecognizer)
-        presentedViewController.view.roundCorners(corners: [.topLeft, .topRight], radius: 8)
+        presentedViewController.view.roundCorners(corners: [.topLeft, .topRight], radius: 16)
     }
     
     override var frameOfPresentedViewInContainerView: CGRect {
@@ -121,6 +123,16 @@ class CustomPresentationController: UIPresentationController {
             //print("frame.origin.y \(frame.origin.y)")
             self.presentedView?.frame = frame
             
+            let screenHeight = UIScreen.main.bounds.height
+            /*
+             a*frame.origin.y + b = scale -> ax + b = y
+             x = screenHeight -> y = 1 -> screenHeight*a + b = 1
+             x = presentY -> y = maxScaleParentVC -> presentY*a + b = maxScale
+             solved by Cramer method
+             */
+            let scale = ((1 - maxScaleParentVC) / (screenHeight - presentY)) * frame.origin.y + ((screenHeight * maxScaleParentVC) - presentY) / (screenHeight - presentY)
+            self.presentingViewController.view.transform = CGAffineTransform(scaleX: scale, y: scale)
+            
         case .ended:
             // reset position
             endPointY = -1
@@ -138,6 +150,7 @@ class CustomPresentationController: UIPresentationController {
                     }
                     
                     strongSelf.presentedView?.frame.origin.y = strongSelf.presentY
+                    strongSelf.presentingViewController.view.transform = CGAffineTransform(scaleX: strongSelf.maxScaleParentVC, y: strongSelf.maxScaleParentVC)
                 }
             }
             
@@ -159,7 +172,9 @@ class CustomPresentationController: UIPresentationController {
                 return
             }
             
-            strongSelf.dimmingView.alpha = 1.0
+            strongSelf.dimmingView.alpha = strongSelf.isDimmingEnabled ? 1 : 0.1
+            strongSelf.presentingViewController.view.transform = CGAffineTransform(scaleX: strongSelf.maxScaleParentVC, y: strongSelf.maxScaleParentVC)
+            strongSelf.presentingViewController.view.roundCorners(corners: [.topLeft, .topRight], radius: 16)
         }) { context in
         }
         
@@ -176,6 +191,8 @@ class CustomPresentationController: UIPresentationController {
             }
             
             strongSelf.dimmingView.alpha = 0.0
+            strongSelf.presentingViewController.view.transform = .identity
+            strongSelf.presentingViewController.view.roundCorners(corners: [.topLeft, .topRight], radius: 0)
         }) { context in
         }
     }
